@@ -1,0 +1,449 @@
+:root {
+    --primary-color: #4169E1; /* כחול סוניק */
+    --background-color: #87CEEB; /* שמיים כחולים */
+    --ground-color: #66BB6A; /* גבעות ירוקות */
+    --text-color: #333;
+    --button-colors: #FF5252, #FF9800, #FFEB3B, #66BB6A, #29B6F6, #7E57C2, #EC407A, #26A69A, #78909C, #FFA726;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+body {
+    font-family: 'Varela Round', sans-serif;
+    background: var(--background-color);
+    color: var(--text-color);
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    direction: rtl;
+}
+
+.game-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.game-header {
+    padding: 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 0 0 15px 15px;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    text-shadow: 1px 1px 0 #FFF;
+}
+
+.settings-button {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.game-scene {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to bottom, var(--background-color) 70%, var(--ground-color) 70%);
+    margin: 0 10px;
+    border-radius: 15px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* סוניק סגנון בסיסי */
+.sonic-character {
+    width: 80px;
+    height: 80px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s;
+    filter: drop-shadow(3px 3px 3px rgba(0,0,0,0.3));
+}
+
+.sonic-character.correct {
+    animation: wave 0.5s ease-in-out;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+.number-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 15px 10px;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.number-button {
+    width: 18%;
+    max-width: 60px;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    border: none;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.number-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.number-button.wrong {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.ring-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 0.8rem;
+}
+
+.feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: opacity 0.5s;
+    opacity: 0;
+    pointer-events: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.feedback.show {
+    opacity: 1;
+    animation: pop 0.5s ease-out;
+}
+
+@keyframes pop {
+    0% { transform: translate(-50%, -50%) scale(0.8); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* תפריט הגדרות */
+.settings-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.settings-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.settings-content {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 350px;
+}
+
+.setting-item {
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+select, button {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: white;
+    font-family: 'Varela Round', sans-serif;
+}
+
+button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* מודל ברכות */
+.congratulations-modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.congratulations-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.congrats-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.medal {
+    font-size: 3rem;
+    margin: 15px 0;
+    animation: rotate 1.5s infinite alternate;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(-10deg); }
+    100% { transform: rotate(10deg); }
+}
+
+/* להתאמה למסכים קטנים וגדולים */
+@media (max-height: 600px) {
+    .sonic-character {
+        width: 60px;
+        height: 60px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .number-button {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .number-button {
+        width: 18%;
+        font-size: 1.4rem;
+    }
+    
+    .ring-icon {
+        font-size: 0.6rem;
+    }
+    
+    .settings-content {
+        width: 90%;
+        padding: 15px;
+    }
+    
+    .game-scene {
+        margin: 5px;
+        padding: 10px;
+    }
+    
+    .feedback {
+        font-size: 1.2rem;
+        padding: 15px;
+        width: 80%;
+    }
+    
+    .game-header {
+        padding: 5px;
+        min-height: 40px;
+    }
+    
+    h1 {
+        font-size: 1.4rem;
+    }
+    
+    .settings-button {
+        top: 10px;
+        left: 10px;
+        font-size: 1.5rem;
+    }
+    
+    .congrats-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+    .number-button {
+        width: 17%;
+        font-size: 1.2rem;
+    }
+}
+
+@media (min-height: 900px) {
+    .sonic-character {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* אפקט בוסט */
+.boost {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translateX(-150%);
+    z-index: 20;
+    animation: boost 1.5s linear forwards;
+}
+
+@keyframes boost {
+    0% { transform: translateX(-150%) rotate(0); }
+    100% { transform: translateX(250%) rotate(720deg); }
+}
+
+.fullscreen-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 0;
+    width: auto;
+}
+
+.audio-prompt {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    animation: fade-out 5s forwards;
+}
+
+@keyframes fade-out {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+} 
