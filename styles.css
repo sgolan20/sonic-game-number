@@ -184,7 +184,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: 1000;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
@@ -193,6 +193,11 @@ h1 {
 .settings-menu.show {
     opacity: 1;
     pointer-events: auto;
+    display: flex !important;
+}
+
+.settings-menu.show .settings-content {
+    display: block !important;
 }
 
 .settings-content {
@@ -201,6 +206,11 @@ h1 {
     border-radius: 20px;
     width: 80%;
     max-width: 350px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateZ(0);
+    position: relative;
+    z-index: 1001;
 }
 
 .setting-item {
@@ -208,6 +218,23 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.setting-control {
+    display: flex;
+    align-items: center;
+}
+
+.setting-control select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-family: 'Varela Round', sans-serif;
+}
+
+#difficultySelect {
+    min-width: 120px;
 }
 
 .switch {

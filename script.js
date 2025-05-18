@@ -69,6 +69,27 @@ function getHebrewNumber(num) {
 
 // אתחול המשחק
 document.addEventListener('DOMContentLoaded', () => {
+    // הסרת סגנון display:none מתוכן ההגדרות אם קיים
+    const settingsContent = document.querySelector('.settings-content');
+    if (settingsContent && settingsContent.style.display === 'none') {
+        settingsContent.removeAttribute('style');
+    }
+
+    // קביעת ערך התחלתי של רמת הקושי
+    gameState.difficulty = 'medium'; // ברירת המחדל היא רמה בינונית
+    // עדכון מספר מקסימלי לפי רמת הקושי
+    switch(gameState.difficulty) {
+        case 'easy':
+            gameState.maxNumber = 3;
+            break;
+        case 'medium':
+            gameState.maxNumber = 5;
+            break;
+        case 'hard':
+            gameState.maxNumber = 10;
+            break;
+    }
+
     initUI();
     initSettings();
     startNewLevel();
@@ -99,8 +120,24 @@ function initUI() {
         '#EC407A', '#26A69A', '#78909C', '#FFA726'
     ];
 
+    // וידוא שמספר הכפתורים תואם את רמת הקושי
+    let maxButtonNumber;
+    switch(gameState.difficulty) {
+        case 'easy':
+            maxButtonNumber = 3;
+            break;
+        case 'medium':
+            maxButtonNumber = 5;
+            break;
+        case 'hard':
+            maxButtonNumber = 10;
+            break;
+        default:
+            maxButtonNumber = gameState.maxNumber;
+    }
+
     // יצירת הכפתורים עם צבעים
-    for (let i = 1; i <= gameState.maxNumber; i++) {
+    for (let i = 1; i <= maxButtonNumber; i++) {
         const button = document.createElement('button');
         button.className = 'number-button';
         button.textContent = i;
@@ -391,30 +428,40 @@ function initSettings() {
     const numberRange = document.getElementById('numberRange');
     const languageSelect = document.getElementById('languageSelect');
     
-    // יצירת בורר רמת קושי
-    const difficultyContainer = document.createElement('div');
-    difficultyContainer.className = 'setting-item';
-    difficultyContainer.innerHTML = `
-        <label for="difficultySelect">${translations[gameState.language].difficulty}:</label>
-        <div class="setting-control">
-            <select id="difficultySelect">
-                <option value="easy">${translations[gameState.language].easy}</option>
-                <option value="medium">${translations[gameState.language].medium}</option>
-                <option value="hard">${translations[gameState.language].hard}</option>
-            </select>
-        </div>
-    `;
+    // הוספת בורר רמת קושי
+    // בודק אם כבר קיים אלמנט לבחירת רמת קושי
+    if (!document.getElementById('difficultySelect')) {
+        const difficultyContainer = document.createElement('div');
+        difficultyContainer.className = 'setting-item';
+        difficultyContainer.innerHTML = `
+            <label for="difficultySelect">${translations[gameState.language].difficulty}:</label>
+            <div class="setting-control">
+                <select id="difficultySelect">
+                    <option value="easy">${translations[gameState.language].easy} (1-3)</option>
+                    <option value="medium">${translations[gameState.language].medium} (1-5)</option>
+                    <option value="hard">${translations[gameState.language].hard} (1-10)</option>
+                </select>
+            </div>
+        `;
+        
+        // מוסיף את האלמנט לפני האלמנט האחרון בתפריט
+        const settingsContent = document.querySelector('.settings-content');
+        const fullscreenItem = document.querySelector('.setting-item:last-child');
+        if (settingsContent && fullscreenItem) {
+            settingsContent.insertBefore(difficultyContainer, fullscreenItem);
+        }
+    }
     
-    // הוספת בורר רמת הקושי למסך ההגדרות
-    const settingsContent = document.querySelector('.settings-content');
-    settingsContent.insertBefore(difficultyContainer, document.querySelector('.setting-item:last-child'));
-    
+    // קבלת אלמנט בורר הקושי
     const difficultySelect = document.getElementById('difficultySelect');
-    difficultySelect.value = gameState.difficulty;
+    if (difficultySelect) {
+        difficultySelect.value = gameState.difficulty;
+    }
     
     // פתיחת וסגירת התפריט
     settingsButton.addEventListener('click', () => {
         settingsMenu.classList.add('show');
+        document.querySelector('.settings-content').style.display = 'block'; // וידוא שהתוכן מוצג
     });
     
     closeButton.addEventListener('click', () => {
@@ -428,28 +475,32 @@ function initSettings() {
     });
     
     // טווח מספרים (יוסתר אם משתמשים ברמות קושי)
-    numberRange.value = gameState.maxNumber;
-    numberRange.parentElement.parentElement.style.display = 'none'; // מסתיר את בורר טווח המספרים
+    if (numberRange && numberRange.parentElement && numberRange.parentElement.parentElement) {
+        numberRange.value = gameState.maxNumber;
+        numberRange.parentElement.parentElement.style.display = 'none'; // מסתיר את בורר טווח המספרים
+    }
     
     // בחירת רמת קושי
-    difficultySelect.addEventListener('change', () => {
-        gameState.difficulty = difficultySelect.value;
-        
-        // עדכון מספר מקסימלי לפי רמת הקושי
-        switch(gameState.difficulty) {
-            case 'easy':
-                gameState.maxNumber = 3;
-                break;
-            case 'medium':
-                gameState.maxNumber = 5;
-                break;
-            case 'hard':
-                gameState.maxNumber = 10;
-                break;
-        }
-        
-        initUI(); // עדכון ממשק המשתמש בהתאם לרמה
-    });
+    if (difficultySelect) {
+        difficultySelect.addEventListener('change', () => {
+            gameState.difficulty = difficultySelect.value;
+            
+            // עדכון מספר מקסימלי לפי רמת הקושי
+            switch(gameState.difficulty) {
+                case 'easy':
+                    gameState.maxNumber = 3;
+                    break;
+                case 'medium':
+                    gameState.maxNumber = 5;
+                    break;
+                case 'hard':
+                    gameState.maxNumber = 10;
+                    break;
+            }
+            
+            initUI(); // עדכון ממשק המשתמש בהתאם לרמה
+        });
+    }
     
     // שפה
     languageSelect.value = gameState.language;
@@ -463,12 +514,12 @@ function initSettings() {
         
         // עדכון ערכי הבחירה
         const options = difficultySelect.querySelectorAll('option');
-        options[0].textContent = translations[gameState.language].easy;
-        options[1].textContent = translations[gameState.language].medium;
-        options[2].textContent = translations[gameState.language].hard;
+        options[0].textContent = translations[gameState.language].easy + ' (1-3)';
+        options[1].textContent = translations[gameState.language].medium + ' (1-5)';
+        options[2].textContent = translations[gameState.language].hard + ' (1-10)';
     });
     
-    // קביעת ערך התחלתי של רמת הקושי ועדכון מספר מקסימלי בהתאם
+    // עדכון ערך התחלתי של רמת הקושי ועדכון מספר מקסימלי בהתאם
     switch(gameState.difficulty) {
         case 'easy':
             gameState.maxNumber = 3;
@@ -516,9 +567,9 @@ function updateUILanguage() {
         const difficultySelect = document.getElementById('difficultySelect');
         if (difficultySelect) {
             const options = difficultySelect.querySelectorAll('option');
-            options[0].textContent = translations[gameState.language].easy;
-            options[1].textContent = translations[gameState.language].medium;
-            options[2].textContent = translations[gameState.language].hard;
+            options[0].textContent = translations[gameState.language].easy + ' (1-3)';
+            options[1].textContent = translations[gameState.language].medium + ' (1-5)';
+            options[2].textContent = translations[gameState.language].hard + ' (1-10)';
         }
     } else {
         // סדר התוויות המקורי
