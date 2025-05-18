@@ -92,6 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initUI();
     initSettings();
+    
+    // לאחר אתחול ההגדרות, וודא שבורר הקושי מוגדר לערך הנכון
+    const difficultySelect = document.getElementById('difficultySelect');
+    if (difficultySelect) {
+        difficultySelect.value = gameState.difficulty;
+    }
+    
     startNewLevel();
     initFullscreenFeature();
     initTouchEvents();
@@ -425,63 +432,46 @@ function initSettings() {
     const settingsMenu = document.getElementById('settingsMenu');
     const closeButton = document.getElementById('closeSettings');
     const soundToggle = document.getElementById('soundToggle');
-    const numberRange = document.getElementById('numberRange');
     const languageSelect = document.getElementById('languageSelect');
     
-    // הוספת בורר רמת קושי
-    // בודק אם כבר קיים אלמנט לבחירת רמת קושי
-    if (!document.getElementById('difficultySelect')) {
-        const difficultyContainer = document.createElement('div');
-        difficultyContainer.className = 'setting-item';
-        difficultyContainer.innerHTML = `
-            <label for="difficultySelect">${translations[gameState.language].difficulty}:</label>
-            <div class="setting-control">
-                <select id="difficultySelect">
-                    <option value="easy">${translations[gameState.language].easy} (1-3)</option>
-                    <option value="medium">${translations[gameState.language].medium} (1-5)</option>
-                    <option value="hard">${translations[gameState.language].hard} (1-10)</option>
-                </select>
-            </div>
-        `;
-        
-        // מוסיף את האלמנט לפני האלמנט האחרון בתפריט
-        const settingsContent = document.querySelector('.settings-content');
-        const fullscreenItem = document.querySelector('.setting-item:last-child');
-        if (settingsContent && fullscreenItem) {
-            settingsContent.insertBefore(difficultyContainer, fullscreenItem);
+    // מחיקת בורר רמת קושי קיים אם יש כזה
+    const existingDifficultySelect = document.getElementById('difficultySelect');
+    if (existingDifficultySelect && existingDifficultySelect.parentElement) {
+        const difficultyItem = existingDifficultySelect.closest('.setting-item');
+        if (difficultyItem && difficultyItem.parentElement) {
+            difficultyItem.parentElement.removeChild(difficultyItem);
         }
     }
     
-    // קבלת אלמנט בורר הקושי
+    // יצירת בורר רמת קושי חדש
+    const difficultyContainer = document.createElement('div');
+    difficultyContainer.className = 'setting-item';
+    difficultyContainer.innerHTML = `
+        <label for="difficultySelect">${translations[gameState.language].difficulty}:</label>
+        <div class="setting-control">
+            <select id="difficultySelect">
+                <option value="easy">${translations[gameState.language].easy} (1-3)</option>
+                <option value="medium">${translations[gameState.language].medium} (1-5)</option>
+                <option value="hard">${translations[gameState.language].hard} (1-10)</option>
+            </select>
+        </div>
+    `;
+    
+    // מוסיף את האלמנט לפני האלמנט האחרון בתפריט
+    const settingsContent = document.querySelector('.settings-content');
+    const closeSettingsButton = document.getElementById('closeSettings');
+    
+    if (settingsContent && closeSettingsButton) {
+        settingsContent.insertBefore(difficultyContainer, closeSettingsButton);
+    }
+    
+    // קבלת אלמנט בורר הקושי החדש
     const difficultySelect = document.getElementById('difficultySelect');
     if (difficultySelect) {
+        // קביעת ערך התחלתי
         difficultySelect.value = gameState.difficulty;
-    }
-    
-    // פתיחת וסגירת התפריט
-    settingsButton.addEventListener('click', () => {
-        settingsMenu.classList.add('show');
-        document.querySelector('.settings-content').style.display = 'block'; // וידוא שהתוכן מוצג
-    });
-    
-    closeButton.addEventListener('click', () => {
-        settingsMenu.classList.remove('show');
-    });
-    
-    // הגדרות צליל
-    soundToggle.checked = gameState.soundEnabled;
-    soundToggle.addEventListener('change', () => {
-        gameState.soundEnabled = soundToggle.checked;
-    });
-    
-    // טווח מספרים (יוסתר אם משתמשים ברמות קושי)
-    if (numberRange && numberRange.parentElement && numberRange.parentElement.parentElement) {
-        numberRange.value = gameState.maxNumber;
-        numberRange.parentElement.parentElement.style.display = 'none'; // מסתיר את בורר טווח המספרים
-    }
-    
-    // בחירת רמת קושי
-    if (difficultySelect) {
+        
+        // הוספת מאזין אירועים
         difficultySelect.addEventListener('change', () => {
             gameState.difficulty = difficultySelect.value;
             
@@ -501,6 +491,22 @@ function initSettings() {
             initUI(); // עדכון ממשק המשתמש בהתאם לרמה
         });
     }
+    
+    // פתיחת וסגירת התפריט
+    settingsButton.addEventListener('click', () => {
+        settingsMenu.classList.add('show');
+        document.querySelector('.settings-content').style.display = 'block'; // וידוא שהתוכן מוצג
+    });
+    
+    closeButton.addEventListener('click', () => {
+        settingsMenu.classList.remove('show');
+    });
+    
+    // הגדרות צליל
+    soundToggle.checked = gameState.soundEnabled;
+    soundToggle.addEventListener('change', () => {
+        gameState.soundEnabled = soundToggle.checked;
+    });
     
     // שפה
     languageSelect.value = gameState.language;
@@ -561,7 +567,9 @@ function updateUILanguage() {
         // סדר התוויות עם רמת הקושי
         labels[0].textContent = translations[gameState.language].sounds + ':';
         labels[difficultyIndex].textContent = translations[gameState.language].difficulty + ':';
-        labels[labels.length - 1].textContent = translations[gameState.language].language + ':';
+        // עדכון אינדקס התווית האחרונה להיות שפה
+        const languageIndex = labels.length - 1;
+        labels[languageIndex].textContent = translations[gameState.language].language + ':';
         
         // עדכון אפשרויות רמת הקושי
         const difficultySelect = document.getElementById('difficultySelect');
@@ -572,10 +580,9 @@ function updateUILanguage() {
             options[2].textContent = translations[gameState.language].hard + ' (1-10)';
         }
     } else {
-        // סדר התוויות המקורי
+        // סדר התוויות ללא רמת קושי
         labels[0].textContent = translations[gameState.language].sounds + ':';
-        labels[1].textContent = translations[gameState.language].numberRange + ':';
-        labels[2].textContent = translations[gameState.language].language + ':';
+        labels[1].textContent = translations[gameState.language].language + ':';
     }
 }
 
